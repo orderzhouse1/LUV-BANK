@@ -1,0 +1,35 @@
+import type { ApiEnv } from "../config/env";
+
+export function createTestEnv(overrides: Partial<ApiEnv> = {}): ApiEnv {
+  return {
+    NODE_ENV: "test",
+    API_HOST: "127.0.0.1",
+    API_PORT: 4000,
+    API_PUBLIC_URL: "http://localhost:4000",
+    CORS_ORIGINS: ["http://localhost:3000"],
+    PERSISTENCE_DRIVER: "memory",
+    COOKIE_SECURE: false,
+    COOKIE_SAME_SITE: "lax",
+    JWT_ACCESS_SECRET: "test-access-secret-value-32chars!!",
+    JWT_REFRESH_SECRET: "test-refresh-secret-value-32chars!",
+    JWT_ISSUER: "luv-bank-api",
+    JWT_AUDIENCE: "luv-bank-web",
+    JWT_ACCESS_TTL: "15m",
+    JWT_REFRESH_TTL: "30d",
+    CSRF_SECRET: "test-csrf-secret-value-32chars!!!!",
+    AUTH_RATE_LIMIT_WINDOW_MS: 900_000,
+    AUTH_RATE_LIMIT_MAX: 1000,
+    GLOBAL_RATE_LIMIT_WINDOW_MS: 60_000,
+    GLOBAL_RATE_LIMIT_MAX: 10_000,
+    REQUEST_BODY_LIMIT: "100kb",
+    REQUEST_TIMEOUT_MS: 30_000,
+    SHUTDOWN_TIMEOUT_MS: 25_000,
+    TRUST_PROXY_HOPS: 0,
+    ALLOW_INSECURE_LOCAL_PRODUCTION_SMOKE: false,
+    ACTIVE_SCORING_POLICY: "MVP_EQUAL_WEIGHT_V1",
+    ACTIVE_INSIGHT_RULESET: "DESCRIPTIVE_INSIGHTS_V1",
+    ACTIVE_NUDGE_RULESET: "GENTLE_NUDGES_V1",
+    ACTIVE_SHARE_SNAPSHOT_VERSION: "PRIVATE_SHARE_SNAPSHOT_V1",
+    ...overrides,
+  };
+}

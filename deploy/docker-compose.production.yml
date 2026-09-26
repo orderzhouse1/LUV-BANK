@@ -1,0 +1,116 @@
+# Production-like operator template. Does NOT contain real secrets or Neon URLs.
+# Do not deploy this file as-is. Substitute environment via your secret manager.
+#
+# Notes:
+# - API runtime uses pooled DATABASE_URL only.
+# - Migration profile uses DIRECT_URL and is an explicit operator action.
+# - Web must not receive database or JWT/CSRF secrets.
+# - Migrations do NOT run on API startup.
+
+name: luv-bank-production-template
+
+networks:
+  luvbank_private:
+    driver: bridge
+
+services:
+  api:
+    image: luv-bank-api:${LUV_BANK_IMAGE_TAG:-phase11}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    networks: [luvbank_private]
+    ports:
+      - "${API_PUBLISH_PORT:-4000}:4000"
+    environment:
+      NODE_ENV: production
+      PERSISTENCE_DRIVER: prisma
+      API_HOST: 0.0.0.0
+      API_PORT: "4000"
+      API_PUBLIC_URL: ${API_PUBLIC_URL}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      DATABASE_URL: ${DATABASE_URL}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-lax}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CSRF_SECRET: ${CSRF_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER:-luv-bank-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-luv-bank-web}
+      ACTIVE_SCORING_POLICY: ${ACTIVE_SCORING_POLICY:-MVP_EQUAL_WEIGHT_V1}
+      ACTIVE_INSIGHT_RULESET: ${ACTIVE_INSIGHT_RULESET:-DESCRIPTIVE_INSIGHTS_V1}
+      ACTIVE_NUDGE_RULESET: ${ACTIVE_NUDGE_RULESET:-GENTLE_NUDGES_V1}
+      ACTIVE_SHARE_SNAPSHOT_VERSION: ${ACTIVE_SHARE_SNAPSHOT_VERSION:-PRIVATE_SHARE_SNAPSHOT_V1}
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
+      AUTH_RATE_LIMIT_WINDOW_MS: ${AUTH_RATE_LIMIT_WINDOW_MS:-900000}
+      AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-10}
+      GLOBAL_RATE_LIMIT_WINDOW_MS: ${GLOBAL_RATE_LIMIT_WINDOW_MS:-60000}
+      GLOBAL_RATE_LIMIT_MAX: ${GLOBAL_RATE_LIMIT_MAX:-300}
+      REQUEST_BODY_LIMIT: ${REQUEST_BODY_LIMIT:-100kb}
+      REQUEST_TIMEOUT_MS: ${REQUEST_TIMEOUT_MS:-30000}
+      SHUTDOWN_TIMEOUT_MS: ${SHUTDOWN_TIMEOUT_MS:-25000}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    image: luv-bank-web:${LUV_BANK_IMAGE_TAG:-phase11}
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_DEFAULT_LOCALE: ${NEXT_PUBLIC_DEFAULT_LOCALE:-en}
+        PWA_CACHE_VERSION: ${PWA_CACHE_VERSION:-phase-9-v1}
+    restart: unless-stopped
+    networks: [luvbank_private]
+    ports:
+      - "${WEB_PUBLISH_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      # Public values only — no DATABASE_URL / JWT / CSRF here.
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/en').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  migrate:
+    profiles: ["migrate"]
+    image: luv-bank-migrate:${LUV_BANK_IMAGE_TAG:-phase11}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.migrate
+    networks: [luvbank_private]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DIRECT_URL: ${DIRECT_URL}
+    # Explicit operator action only:
+    # docker compose -f deploy/docker-compose.production.yml --profile migrate run --rm migrate migrate deploy --schema prisma/schema.prisma
+    command: ["migrate", "status", "--schema", "prisma/schema.prisma"]

@@ -1,0 +1,223 @@
+/**
+ * Luv Bank — Prisma foundation schema (Phase 7 share snapshots + prior phases).
+ * Assumptions:
+ * - One registered user owns private relationship profiles.
+ * - DB may hold multiple RelationshipProfile rows; UI exposes one active
+ * profile via User.activeRelationshipProfileId (must belong to the same user).
+ * - Moments belong to a RelationshipProfile; ownership is enforced via the
+ * authenticated user's active profile (never trust client-supplied owner IDs).
+ * - Category codes are stable domain identifiers; labels live in locale
+ * dictionaries. No MomentCategory table.
+ * - Moments store grandfathered scoreImpact + scoringVersion (MVP_EQUAL_WEIGHT_V1).
+ * - NudgeSuppression stores temporary user-controlled hide windows per nudge code.
+ * - AuthSession stores hashed refresh tokens only.
+ * - Cascade: deleting a RelationshipProfile deletes its Moments and suppressions.
+ * - No migration is applied without a real DATABASE_URL / DIRECT_URL on a dedicated non-production Neon branch.
+ * - DATABASE_URL is the pooled runtime URL; DIRECT_URL is used for migrations.
+ */
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum PreferredLocale {
+  en
+  ar
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum RelationshipStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MomentKind {
+  POSITIVE
+  DIFFICULT
+}
+
+enum ShareScope {
+  POSITIVE_ONLY
+  SELECTED_PERIOD_SUMMARY
+  EXTENDED_BALANCE_SUMMARY
+}
+
+model User {
+  id                          String          @id @default(cuid())
+  /// Normalized unique email (trimmed + lowercased).
+  email                       String          @unique
+  passwordHash                String
+  displayName                 String
+  preferredLocale             PreferredLocale @default(en)
+  timezone                    String          @default("UTC")
+  status                      UserStatus      @default(ACTIVE)
+  acceptedTermsAt             DateTime?
+  lastLoginAt                 DateTime?
+  /// Optional active profile; application must verify ownership on every use.
+  activeRelationshipProfileId String?         @unique
+  createdAt                   DateTime        @default(now())
+  updatedAt                   DateTime        @updatedAt
+  deletedAt                   DateTime?
+
+  activeRelationshipProfile RelationshipProfile?  @relation("UserActiveProfile", fields: [activeRelationshipProfileId], references: [id], onDelete: SetNull)
+  relationships             RelationshipProfile[] @relation("UserOwnedProfiles")
+  sessions                  AuthSession[]
+  shareSnapshots            ShareSnapshot[]       @relation("ShareCreatedBy")
+
+  @@index([deletedAt])
+  @@index([status])
+}
+
+model AuthSession {
+  id                  String    @id @default(cuid())
+  userId              String
+  /// Groups rotated refresh tokens for reuse detection.
+  familyId            String
+  /// SHA-256 (or stronger) hash of the full refresh token — never store raw tokens.
+  refreshTokenHash    String    @unique
+  expiresAt           DateTime
+  revokedAt           DateTime?
+  replacedBySessionId String?
+  createdAt           DateTime  @default(now())
+  lastUsedAt          DateTime?
+  /// Coarse non-identifying client hint (e.g. "web"); never store raw UA or IP.
+  clientKind          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+
+model RelationshipProfile {
+  id                 String             @id @default(cuid())
+  ownerId            String
+  /// Private display title / partner alias (never shared automatically).
+  title              String
+  /// Optional short private label.
+  label              String?
+  partnerDisplayName String?
+  startedAt          DateTime?
+  status             RelationshipStatus @default(ACTIVE)
+  archivedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  owner              User                @relation("UserOwnedProfiles", fields: [ownerId], references: [id], onDelete: Cascade)
+  activeForUser      User?               @relation("UserActiveProfile")
+  moments            Moment[]
+  nudgeSuppressions  NudgeSuppression[]
+  reminderPreference ReminderPreference?
+  shareSnapshots     ShareSnapshot[]
+
+  @@index([ownerId, status])
+}
+
+/**
+ * User-controlled temporary suppression of a specific nudge code.
+ * Dismissal never affects score, insights, or account access.
+ */
+model NudgeSuppression {
+  id              String   @id @default(cuid())
+  relationshipId  String
+  nudgeCode       String
+  suppressedUntil DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  relationship RelationshipProfile @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+
+  @@unique([relationshipId, nudgeCode])
+  @@index([relationshipId, suppressedUntil])
+}
+
+model Moment {
+  id                 String     @id @default(cuid())
+  /// FK to RelationshipProfile (active-profile ownership enforced in services).
+  relationshipId     String
+  kind               MomentKind
+  /// Stable category code (e.g. AFFECTION). Labels live in locale dictionaries.
+  categoryCode       String
+  /// Optional private plain-text note (max 500 Unicode chars at the API layer).
+  note               String?
+  /// When the moment occurred (UTC).
+  occurredAt         DateTime
+  /// Client-generated UUID for idempotent creation (unique per profile).
+  clientMutationId   String
+  /// Hash of logical create payload (kind|category|note|clientOccurredAt) for idempotency.
+  payloadFingerprint String
+  /// Grandfathered score impact from the policy active at create or kind/category edit.
+  scoreImpact        Int
+  /// Scoring policy version that produced scoreImpact (e.g. MVP_EQUAL_WEIGHT_V1).
+  scoringVersion     String
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  relationship RelationshipProfile @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+
+  @@unique([relationshipId, clientMutationId])
+  @@index([relationshipId, occurredAt(sort: Desc), id(sort: Desc)])
+  @@index([relationshipId, kind])
+  @@index([relationshipId, categoryCode])
+  @@index([relationshipId, occurredAt])
+}
+
+model ReminderPreference {
+  id             String    @id @default(cuid())
+  relationshipId String    @unique
+  /// Explicit user opt-in; disabled by default.
+  enabled        Boolean   @default(false)
+  /// Only WEEKLY is accepted in Phase 6.
+  cadence        String    @default("WEEKLY")
+  purposeCode    String    @default("PRIVATE_WEEKLY_CHECK_IN")
+  /// MONDAY … SUNDAY (stable domain enum; not 0–6).
+  weekday        String    @default("MONDAY")
+  localHour      Int       @default(18)
+  localMinute    Int       @default(0)
+  /// IANA timezone identifier (e.g. Asia/Amman). Not a raw UTC offset.
+  timezone       String    @default("Asia/Amman")
+  /// Authoritative next availability instant in UTC (server-owned).
+  nextDueAt      DateTime?
+  /// Temporary hide until this UTC instant (snooze). Cleared on dismiss/update.
+  snoozedUntil   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  relationship RelationshipProfile @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+}
+
+model ShareSnapshot {
+  id              String     @id @default(cuid())
+  relationshipId  String
+  createdById     String
+  scope           ShareScope
+  /// Rolling window code: 7d | 30d | 90d
+  window          String
+  /// Reviewed payload schema version (e.g. PRIVATE_SHARE_SNAPSHOT_V1).
+  snapshotVersion String
+  /// Sanitized immutable JSON payload for the public share view (no notes/IDs).
+  payload         Json
+  /// SHA-256 hash of the bearer token (raw token is never persisted).
+  tokenHash       String     @unique
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  relationship RelationshipProfile @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+  createdBy    User                @relation("ShareCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([relationshipId, createdAt(sort: Desc)])
+  @@index([expiresAt])
+}

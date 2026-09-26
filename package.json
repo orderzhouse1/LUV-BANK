@@ -1,0 +1,42 @@
+{
+  "name": "luv-bank",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @luv-bank/web --filter @luv-bank/api run dev",
+    "build": "pnpm -r --filter @luv-bank/database --filter @luv-bank/validation --filter @luv-bank/config --filter @luv-bank/api --filter @luv-bank/web run build",
+    "lint": "pnpm -r --filter @luv-bank/web --filter @luv-bank/api --filter @luv-bank/validation --filter @luv-bank/database --filter @luv-bank/config run lint",
+    "typecheck": "pnpm -r --filter @luv-bank/web --filter @luv-bank/api --filter @luv-bank/validation --filter @luv-bank/database --filter @luv-bank/config run typecheck",
+    "test": "pnpm -r --filter @luv-bank/api --filter @luv-bank/web run test",
+    "test:neon": "pnpm --filter @luv-bank/api run test:neon",
+    "test:e2e": "playwright test",
+    "migrate:status": "node scripts/migrate.mjs status",
+    "migrate:deploy": "node scripts/migrate.mjs deploy",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "unrs-resolver",
+      "argon2"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.62.1",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "playwright": "^1.62.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0"
+  }
+}

@@ -1,0 +1,58 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Builds
+dist
+.next
+out
+coverage
+*.tsbuildinfo
+
+# Environment / secrets (never commit real env files)
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.*.example
+deploy/.env.smoke
+deploy/.env.production
+
+# Private keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+certs/
+secrets/
+
+# Test / E2E artifacts
+playwright-report
+test-results
+blob-report
+**/__screenshots__/
+**/trace.zip
+**/traces/
+
+# Logs and temp
+*.log
+npm-debug.log*
+pnpm-debug.log*
+tmp/
+temp/
+.tmp/
+downloads/
+exports/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*~
+
+# Prisma generated client (when output is local)
+packages/database/src/generated

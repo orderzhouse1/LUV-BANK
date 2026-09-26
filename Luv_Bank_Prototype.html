@@ -1,0 +1,1700 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luv Bank — Prototype</title>
+    <style>
+      :root {
+        --accent: #b4267a;
+        --accent2: #e0588f;
+        --ink: #221a20;
+        --muted: #8a7f86;
+        --pos: #1f9d6b;
+        --posbg: #e7f6ef;
+        --neg: #d9544d;
+        --negbg: #fdecea;
+        --warn: #c98a17;
+        --warnbg: #fdf3e0;
+        --card: #ffffff;
+        --line: #efe6ec;
+        --bg1: #fff5fb;
+      }
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Tahoma", "Noto Naskh Arabic", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: radial-gradient(
+          1200px 700px at 50% -10%,
+          #fbe9f4 0%,
+          #efe4f2 55%,
+          #e7e0ee 100%
+        );
+        color: var(--ink);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100%;
+        padding: 26px 14px 40px;
+      }
+      .head {
+        text-align: center;
+        margin-bottom: 18px;
+        max-width: 560px;
+      }
+      .head h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+        letter-spacing: 0.5px;
+        color: var(--accent);
+      }
+      .head p {
+        margin: 0;
+        color: #6c6370;
+        font-size: 13.5px;
+        line-height: 1.5;
+      }
+      .head .mission {
+        margin-top: 6px;
+        font-style: italic;
+        color: var(--accent);
+        font-size: 13px;
+      }
+      .hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #9a8ea0;
+      }
+      .langbar {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+      .langtoggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #fff;
+        border: 1.5px solid var(--line);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 8px 15px;
+        border-radius: 22px;
+        cursor: pointer;
+        box-shadow: 0 6px 16px -12px rgba(120, 40, 90, 0.4);
+        transition: 0.15s;
+      }
+      .langtoggle:active {
+        transform: scale(0.97);
+      }
+      .langtoggle .globe {
+        font-size: 15px;
+      }
+      .phone {
+        width: 340px;
+        height: 712px;
+        background: #0c0a0c;
+        border-radius: 46px;
+        padding: 11px;
+        box-shadow:
+          0 30px 60px -20px rgba(80, 20, 55, 0.45),
+          0 8px 22px rgba(0, 0, 0, 0.18);
+        position: relative;
+      }
+      .screen {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: var(--bg1);
+        border-radius: 36px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 130px;
+        height: 26px;
+        background: #0c0a0c;
+        border-radius: 0 0 16px 16px;
+        z-index: 30;
+      }
+      .statusbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 20px 4px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .statusbar span {
+        color: #4a414780;
+      }
+      .topbar {
+        padding: 4px 18px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .brand {
+        font-weight: 800;
+        color: var(--accent);
+        letter-spacing: 0.4px;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .brand .heart {
+        width: 16px;
+        height: 16px;
+      }
+      .topright {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .langmini {
+        font-size: 11.5px;
+        font-weight: 800;
+        color: var(--accent);
+        background: #fdf1f8;
+        border: 1px solid #f3d9ea;
+        padding: 4px 9px;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+      .langmini:active {
+        transform: scale(0.95);
+      }
+      .who {
+        font-size: 11.5px;
+        color: var(--muted);
+        background: #fff;
+        border: 1px solid var(--line);
+        padding: 4px 9px;
+        border-radius: 20px;
+      }
+      .view {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px 16px 88px;
+      }
+      .view::-webkit-scrollbar {
+        display: none;
+      }
+      .page {
+        display: none;
+        animation: fade 0.25s ease;
+      }
+      .page.on {
+        display: block;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 16px;
+        margin-bottom: 14px;
+        box-shadow: 0 6px 16px -12px rgba(120, 40, 90, 0.35);
+      }
+      .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--muted);
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .hero {
+        background: linear-gradient(150deg, var(--accent) 0%, #c8489a 60%, var(--accent2) 100%);
+        color: #fff;
+        border: none;
+        text-align: center;
+        padding: 20px 16px;
+      }
+      .hero .label {
+        color: #ffd7ec;
+      }
+      .balance {
+        font-size: 46px;
+        font-weight: 800;
+        line-height: 1;
+        margin: 2px 0 4px;
+        letter-spacing: -1px;
+      }
+      .balance small {
+        font-size: 18px;
+        font-weight: 600;
+        opacity: 0.8;
+      }
+      .trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        background: rgba(255, 255, 255, 0.18);
+        padding: 5px 11px;
+        border-radius: 20px;
+      }
+      .badge {
+        display: inline-block;
+        margin-top: 12px;
+        background: #fff;
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 7px 14px;
+        border-radius: 20px;
+      }
+      .badge .sub {
+        color: #a98;
+        font-weight: 600;
+      }
+      .sharebtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 14px;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        color: #fff;
+        font-weight: 700;
+        font-size: 12.5px;
+        padding: 9px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+      .sharebtn:active {
+        transform: scale(0.97);
+      }
+      .nudge {
+        border: none;
+        border-radius: 18px;
+        padding: 14px 15px;
+        margin-bottom: 14px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .nudge .ni {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: 1px;
+      }
+      .nudge .nt {
+        flex: 1;
+      }
+      .nudge .nt b {
+        display: block;
+        font-size: 13.5px;
+        margin-bottom: 2px;
+      }
+      .nudge .nt p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.45;
+        opacity: 0.92;
+      }
+      .nudge .na {
+        border: none;
+        border-radius: 11px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 9px;
+        color: #fff;
+      }
+      .nudge.pos {
+        background: linear-gradient(135deg, #e7f6ef, #d5f0e3);
+        color: #155e43;
+      }
+      .nudge.pos .na {
+        background: var(--pos);
+      }
+      .nudge.warn {
+        background: linear-gradient(135deg, #fdf3e0, #fbe9cb);
+        color: #7a560c;
+      }
+      .nudge.warn .na {
+        background: var(--warn);
+      }
+      .nudge.neg {
+        background: linear-gradient(135deg, #fdecea, #fbdcd9);
+        color: #8a322c;
+      }
+      .nudge.neg .na {
+        background: var(--neg);
+      }
+      .spark {
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+        height: 64px;
+        margin-top: 6px;
+      }
+      .spark .bar {
+        flex: 1;
+        border-radius: 6px 6px 3px 3px;
+        background: linear-gradient(180deg, var(--accent2), var(--accent));
+        opacity: 0.85;
+      }
+      .sparkx {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .ratio-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .meter {
+        flex: 1;
+        height: 12px;
+        border-radius: 8px;
+        background: var(--negbg);
+        overflow: hidden;
+        display: flex;
+      }
+      .meter .fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2bbd83, #1f9d6b);
+        transition: width 0.4s;
+      }
+      .ratio-val {
+        font-weight: 800;
+        color: var(--pos);
+        font-size: 15px;
+      }
+      .note {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+        margin-top: 8px;
+      }
+      .remind {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #6c6370;
+        margin-top: 10px;
+        background: #faf3f8;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 11px;
+      }
+      .remind .sw {
+        margin-inline-start: auto;
+        width: 34px;
+        height: 20px;
+        border-radius: 20px;
+        background: var(--pos);
+        position: relative;
+      }
+      .remind .sw::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        inset-inline-end: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+      }
+      .tx {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 2px;
+        border-bottom: 1px solid var(--line);
+      }
+      .tx:last-child {
+        border-bottom: none;
+      }
+      .tx .ic {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .tx .ic.pos {
+        background: var(--posbg);
+      }
+      .tx .ic.neg {
+        background: var(--negbg);
+      }
+      .tx .main {
+        flex: 1;
+        min-width: 0;
+      }
+      .tx .main b {
+        font-size: 13.5px;
+        font-weight: 650;
+        display: block;
+      }
+      .tx .main span {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .tx .amt {
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .amt.pos {
+        color: var(--pos);
+      }
+      .amt.neg {
+        color: var(--neg);
+      }
+      .seg {
+        display: flex;
+        background: #f1e6ee;
+        border-radius: 14px;
+        padding: 4px;
+        margin-bottom: 14px;
+      }
+      .seg button {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 9px;
+        border-radius: 11px;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .seg button.act-pos {
+        background: var(--pos);
+        color: #fff;
+      }
+      .seg button.act-neg {
+        background: var(--neg);
+        color: #fff;
+      }
+      .emos {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .emo {
+        border: 1.5px solid var(--line);
+        background: #fff;
+        border-radius: 16px;
+        padding: 13px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.15s;
+      }
+      .emo:active {
+        transform: scale(0.97);
+      }
+      .emo.sel {
+        border-color: var(--accent);
+        background: #fdf1f8;
+        box-shadow: 0 0 0 3px #f6dcec;
+      }
+      .emo .e {
+        font-size: 24px;
+      }
+      .emo .n {
+        font-size: 12.5px;
+        font-weight: 650;
+        margin-top: 4px;
+      }
+      .emo .w {
+        font-size: 10.5px;
+        color: var(--muted);
+      }
+      .field {
+        margin-top: 14px;
+      }
+      .field input {
+        width: 100%;
+        border: 1.5px solid var(--line);
+        border-radius: 13px;
+        padding: 12px 13px;
+        font-size: 13.5px;
+        font-family: inherit;
+        outline: none;
+        text-align: start;
+      }
+      .field input:focus {
+        border-color: var(--accent2);
+      }
+      .cta {
+        width: 100%;
+        border: none;
+        border-radius: 15px;
+        padding: 15px;
+        font-size: 15px;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        margin-top: 16px;
+        cursor: pointer;
+        box-shadow: 0 10px 20px -8px rgba(180, 38, 122, 0.6);
+        font-family: inherit;
+      }
+      .cta:active {
+        transform: translateY(1px);
+      }
+      .cta.disabled {
+        opacity: 0.45;
+        box-shadow: none;
+      }
+      .pvw {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .pvw button {
+        flex: 1;
+        border: 1.5px solid var(--line);
+        background: #fff;
+        border-radius: 11px;
+        padding: 8px 4px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .pvw button.on {
+        color: #fff;
+        border-color: transparent;
+      }
+      .pvw button.on[data-k="hi"] {
+        background: var(--pos);
+      }
+      .pvw button.on[data-k="mid"] {
+        background: var(--accent);
+      }
+      .pvw button.on[data-k="lo"] {
+        background: var(--neg);
+      }
+      .insight {
+        background: linear-gradient(150deg, #fff, #fdf2f9);
+        border: 1px solid #f3d9ea;
+      }
+      .insight h3 {
+        margin: 2px 0 8px;
+        font-size: 16px;
+      }
+      .insight p {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #4f454c;
+        margin: 0 0 10px;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 5px 11px;
+        border-radius: 20px;
+        margin: 0 6px 6px 0;
+      }
+      .pill.g {
+        background: var(--posbg);
+        color: var(--pos);
+      }
+      .pill.p {
+        background: #f3e7f6;
+        color: #8a3fa6;
+      }
+      .pill.b {
+        background: var(--negbg);
+        color: var(--neg);
+      }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 4px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1.5px solid var(--line);
+        background: #fff;
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 12.5px;
+        font-weight: 650;
+        cursor: pointer;
+        transition: 0.15s;
+      }
+      .chip:active {
+        transform: scale(0.96);
+      }
+      .chip .ce {
+        font-size: 16px;
+      }
+      .chip.go {
+        border-color: #f2cfe4;
+        background: #fdf2f9;
+        color: var(--accent);
+      }
+      .sugg {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+      }
+      .sugg .d {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-top: 6px;
+        flex-shrink: 0;
+      }
+      .sugg p {
+        font-size: 12.5px;
+        margin: 0;
+        color: #4f454c;
+        line-height: 1.5;
+      }
+      .tabbar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 74px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 8px 12px;
+        z-index: 20;
+      }
+      .tab {
+        flex: 1;
+        background: none;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        color: var(--muted);
+        font-size: 10.5px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .tab svg {
+        width: 23px;
+        height: 23px;
+      }
+      .tab.on {
+        color: var(--accent);
+      }
+      .fab {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border: none;
+        color: #fff;
+        font-size: 28px;
+        font-weight: 300;
+        box-shadow: 0 10px 20px -6px rgba(180, 38, 122, 0.65);
+        transform: translateY(-14px);
+        cursor: pointer;
+      }
+      .fab:active {
+        transform: translateY(-12px);
+      }
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: 96px;
+        transform: translateX(-50%) translateY(20px);
+        background: #23121c;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 11px 18px;
+        border-radius: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+        z-index: 60;
+        text-align: center;
+        max-width: 280px;
+        white-space: normal;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      /* share modal */
+      .modal {
+        position: absolute;
+        inset: 0;
+        background: rgba(20, 8, 16, 0.45);
+        z-index: 50;
+        display: none;
+        align-items: flex-end;
+      }
+      .modal.on {
+        display: flex;
+        animation: fade 0.2s ease;
+      }
+      .sheet {
+        background: #fff;
+        width: 100%;
+        border-radius: 26px 26px 36px 36px;
+        padding: 20px 18px 24px;
+        animation: up 0.25s ease;
+      }
+      @keyframes up {
+        from {
+          transform: translateY(30px);
+          opacity: 0.6;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      .sheet h3 {
+        margin: 2px 0 3px;
+        font-size: 17px;
+        color: var(--accent);
+      }
+      .sheet .sub {
+        margin: 0 0 14px;
+        font-size: 12.5px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .opt {
+        width: 100%;
+        text-align: start;
+        border: 1.5px solid var(--line);
+        background: #fff;
+        border-radius: 15px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: block;
+        font-family: inherit;
+      }
+      .opt:active {
+        transform: scale(0.98);
+      }
+      .opt b {
+        font-size: 13.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .opt span {
+        display: block;
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 3px;
+        line-height: 1.4;
+      }
+      .opt.rec {
+        border-color: #bfe6d2;
+        background: #f1faf5;
+      }
+      .opt.rec b {
+        color: var(--pos);
+      }
+      .guard {
+        font-size: 11.5px;
+        color: #7a560c;
+        background: var(--warnbg);
+        border: 1px solid #f3e2bf;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin: 2px 0 12px;
+        line-height: 1.45;
+      }
+      .opt.cancel {
+        text-align: center;
+        border: none;
+        color: var(--muted);
+        font-weight: 700;
+        margin-bottom: 0;
+        background: none;
+      }
+      .disclaimer {
+        max-width: 520px;
+        text-align: center;
+        font-size: 11.5px;
+        color: #9a8ea0;
+        margin-top: 20px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="head">
+      <h1 id="headTitle">Luv Bank — interactive prototype</h1>
+      <p id="headDesc">One app, both sides.</p>
+      <div class="mission" id="headMission">
+        Maintain, support and strengthen relationships — and help rethink the toxic ones.
+      </div>
+      <div class="hint" id="headHint">
+        Try the Insights preview, the smart nudge, and the Share button on Home.
+      </div>
+    </div>
+    <div class="langbar">
+      <button class="langtoggle" onclick="toggleLang()">
+        <span class="globe">🌐</span><span id="langToggleLabel">العربية</span>
+      </button>
+    </div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span>5G ▮▮▮ 84%</span></div>
+        <div class="topbar">
+          <div class="brand">
+            <svg class="heart" viewBox="0 0 24 24" fill="#B4267A">
+              <path
+                d="M12 21s-7.5-4.6-10-9.3C.3 8.2 2 4.8 5.4 4.8c2 0 3.3 1.1 4.1 2.4l.5.8.5-.8c.8-1.3 2.1-2.4 4.1-2.4 3.4 0 5.1 3.4 3.4 6.9C19.5 16.4 12 21 12 21z"
+              /></svg
+            ><span id="brandText">Luv Bank</span>
+          </div>
+          <div class="topright">
+            <span class="langmini" onclick="toggleLang()" id="langMini">ع</span>
+            <div class="who" id="whoText">You &amp; Sara · 1y 4m</div>
+          </div>
+        </div>
+        <div class="view">
+          <div class="page on" id="home">
+            <div class="card hero">
+              <div class="label" id="balanceLabel">Relationship balance</div>
+              <div class="balance" id="bal">+128 <small>pts</small></div>
+              <div class="trend" id="trendChip">▲ +14 this week</div>
+              <div class="badge" id="classBadge">
+                Intimacy <span class="sub">· trending up</span>
+              </div>
+              <div>
+                <button class="sharebtn" onclick="openShare()" id="shareBtn">
+                  ↗ Share balance sheet
+                </button>
+              </div>
+            </div>
+            <div class="nudge pos" id="nudge">
+              <div class="ni" id="nudgeIc">💝</div>
+              <div class="nt">
+                <b id="nudgeTitle">You're rich in love right now</b>
+                <p id="nudgeBody">Big credit balance.</p>
+                <button class="na" id="nudgeBtn" onclick="nudgeAction()">Pay it forward →</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="label" id="last7Label">Last 7 weeks</div>
+              <div class="spark" id="spark"></div>
+              <div class="sparkx">
+                <span id="spark7w">7w ago</span><span id="sparkNow">now</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="label" id="ratioLabel">Positive : difficult ratio</div>
+              <div class="ratio-row">
+                <div class="meter"><div class="fill" id="ratioFill" style="width: 83%"></div></div>
+                <div class="ratio-val" id="ratioVal">5.0 : 1</div>
+              </div>
+              <div class="note" id="gottmanNote">
+                The Gottman 5:1 magic ratio links a healthy balance of positive to difficult moments
+                with lasting relationships.
+              </div>
+              <div class="remind">
+                <span>⏰</span> <span id="remindText">Weekly pay-back reminder · Sun 7pm</span>
+                <span class="sw"></span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="label" id="recentLabel">Recent moments</div>
+              <div id="txlist"></div>
+            </div>
+          </div>
+          <div class="page" id="log">
+            <div class="card">
+              <div class="label" id="logLabel">Log a moment</div>
+              <div class="seg">
+                <button id="segPos" class="act-pos" onclick="setKind('pos')">
+                  Deposit · positive
+                </button>
+                <button id="segNeg" onclick="setKind('neg')">Withdrawal · difficult</button>
+              </div>
+              <div class="emos" id="emos"></div>
+              <div class="field"><input id="noteInput" placeholder="Add a note (optional)" /></div>
+              <button class="cta disabled" id="addBtn" onclick="addTx()">
+                Choose a feeling to add
+              </button>
+            </div>
+            <div class="card" style="text-align: center">
+              <div class="note" style="margin: 0" id="privateNote">Only you see what you log.</div>
+            </div>
+          </div>
+          <div class="page" id="insights">
+            <div class="pvw">
+              <button data-k="hi" class="on" onclick="preview('hi')" id="pvwHi">💚 Thriving</button>
+              <button data-k="mid" onclick="preview('mid')" id="pvwMid">😌 Steady</button>
+              <button data-k="lo" onclick="preview('lo')" id="pvwLo">🥀 Struggling</button>
+            </div>
+            <div class="card insight">
+              <div class="label" id="whatMeansLabel">What this means</div>
+              <h3 id="insightTitle"></h3>
+              <p id="insightBody"></p>
+              <div id="insightPills"></div>
+            </div>
+            <div class="card">
+              <div class="label" id="actLabel">What you could do now</div>
+              <div class="acts" id="acts"></div>
+            </div>
+            <div class="card" id="suggCard">
+              <div class="label" id="gentleSuggLabel">Gentle suggestions</div>
+              <div id="suggList"></div>
+            </div>
+            <div class="card" style="text-align: center">
+              <div class="note" style="margin: 0" id="footNote"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal" id="shareModal">
+          <div class="sheet">
+            <h3 id="shareTitle">Share your balance sheet</h3>
+            <p class="sub" id="shareSub">Your ledger is private.</p>
+            <button class="opt rec" onclick="share('pos')">
+              <b id="optPosTitle">💚 Positives only</b
+              ><span id="optPosDesc">A statement of appreciation.</span>
+            </button>
+            <button class="opt" onclick="share('month')">
+              <b id="optMonthTitle">📅 This month</b
+              ><span id="optMonthDesc">The last 30 days, good and difficult.</span>
+            </button>
+            <button class="opt" onclick="share('full')">
+              <b id="optFullTitle">📄 Full balance sheet</b
+              ><span id="optFullDesc">Everything, including hard moments.</span>
+            </button>
+            <div class="guard" id="guardText">
+              Sharing difficult moments? Luv Bank frames them gently.
+            </div>
+            <button class="opt cancel" onclick="closeShare()" id="cancelBtn">Cancel</button>
+          </div>
+        </div>
+        <div class="toast" id="toast">Added ✓</div>
+        <div class="tabbar">
+          <button class="tab on" id="tabHome" onclick="go('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 11l9-8 9 8" />
+              <path d="M5 10v10h14V10" /></svg
+            ><span id="tabHomeLabel">Home</span>
+          </button>
+          <button class="fab" onclick="go('log')">＋</button>
+          <button class="tab" id="tabInsights" onclick="go('insights')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19V5" />
+              <path d="M4 19h16" />
+              <path d="M8 16l3-4 3 2 4-6" /></svg
+            ><span id="tabInsightsLabel">Insights</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="disclaimer" id="disclaimer">
+      Concept prototype. Numbers and insights are illustrative.
+    </div>
+    <script>
+      /* ============ LANGUAGE STATE ============ */
+      let lang = "en";
+      try {
+        const saved = localStorage.getItem("luvbank_lang");
+        if (saved === "ar" || saved === "en") lang = saved;
+      } catch (e) {}
+
+      /* Pick the right string from a {en,ar} object, or pass through a plain string */
+      function L(x) {
+        return x && typeof x === "object" ? (x[lang] ?? x.en) : x;
+      }
+
+      /* ============ STATIC UI STRINGS ============ */
+      const UI = {
+        docTitle: { en: "Luv Bank — Prototype", ar: "بنك الحب — نموذج أولي" },
+        headTitle: { en: "Luv Bank — interactive prototype", ar: "بنك الحب — نموذج تفاعلي" },
+        headDesc: {
+          en: "One app, both sides. Log a moment with <b>＋</b>; the balance, the nudges, and the insight all respond.",
+          ar: "تطبيق واحد، بكلا الجانبين. سجّل لحظة بزر <b>＋</b>، فيتجاوب الرصيد والتنبيهات والرؤى.",
+        },
+        headMission: {
+          en: "Maintain, support and strengthen relationships — and help rethink the toxic ones.",
+          ar: "حافظ على العلاقات وادعمها وقوّها — وساعد على إعادة التفكير في العلاقات السامة.",
+        },
+        headHint: {
+          en: "Try the Insights preview, the smart nudge, and the “Share balance sheet” button on Home.",
+          ar: "جرّب معاينة الرؤى، والتنبيه الذكي، وزر «مشاركة كشف الحساب» في الرئيسية.",
+        },
+        langToggleLabel: { en: "العربية", ar: "English" },
+        langMini: { en: "ع", ar: "EN" },
+        brandText: { en: "Luv Bank", ar: "بنك الحب" },
+        whoText: { en: "You & Sara · 1y 4m", ar: "أنت وسارة · سنة و4 أشهر" },
+        balanceLabel: { en: "Relationship balance", ar: "رصيد العلاقة" },
+        pts: { en: "pts", ar: "نقطة" },
+        thisWeek: { en: "this week", ar: "هذا الأسبوع" },
+        shareBtn: { en: "↗ Share balance sheet", ar: "↗ مشاركة كشف الحساب" },
+        last7Label: { en: "Last 7 weeks", ar: "آخر 7 أسابيع" },
+        spark7w: { en: "7w ago", ar: "قبل 7 أسابيع" },
+        sparkNow: { en: "now", ar: "الآن" },
+        ratioLabel: { en: "Positive : difficult ratio", ar: "نسبة الإيجابي إلى الصعب" },
+        gottmanNote: {
+          en: "The Gottman 5:1 “magic ratio” links a healthy balance of positive to difficult moments with lasting relationships.",
+          ar: "تربط «نسبة جوتمان السحرية» 5:1 بين توازن صحي من اللحظات الإيجابية والصعبة وبين العلاقات الدائمة.",
+        },
+        remindText: {
+          en: "Weekly “pay-back” reminder · Sun 7pm",
+          ar: "تذكير أسبوعي لـ«ردّ الجميل» · الأحد 7 مساءً",
+        },
+        recentLabel: { en: "Recent moments", ar: "لحظات حديثة" },
+        logLabel: { en: "Log a moment", ar: "سجّل لحظة" },
+        segPos: { en: "Deposit · positive", ar: "إيداع · إيجابي" },
+        segNeg: { en: "Withdrawal · difficult", ar: "سحب · صعب" },
+        notePlaceholder: {
+          en: "Add a note (optional) — e.g. ‘surprised me with coffee’",
+          ar: "أضف ملاحظة (اختياري) — مثل «فاجأني بالقهوة»",
+        },
+        addChoose: { en: "Choose a feeling to add", ar: "اختر شعورًا لإضافته" },
+        addDeposit: { en: "Add deposit", ar: "أضف إيداعًا" },
+        addWithdrawal: { en: "Add withdrawal", ar: "أضف سحبًا" },
+        privateNote: {
+          en: "Only you see what you log. Luv Bank is a private mirror — you choose if and when to share any of it.",
+          ar: "أنت وحدك ترى ما تسجّله. بنك الحب مرآة خاصة — أنت من يقرر إن كنت ستشارك شيئًا ومتى.",
+        },
+        pvwHi: { en: "💚 Thriving", ar: "💚 مزدهرة" },
+        pvwMid: { en: "😌 Steady", ar: "😌 مستقرة" },
+        pvwLo: { en: "🥀 Struggling", ar: "🥀 متعثّرة" },
+        whatMeansLabel: { en: "What this means", ar: "ماذا يعني هذا" },
+        gentleSuggLabel: { en: "Gentle suggestions", ar: "اقتراحات لطيفة" },
+        shareTitle: { en: "Share your balance sheet", ar: "شارك كشف حسابك" },
+        shareSub: {
+          en: "Your ledger is private. Choose what to send to Sara — your terms, anytime.",
+          ar: "سجلّك خاص. اختر ما ترسله لسارة — بشروطك، وفي أي وقت.",
+        },
+        optPosTitle: { en: "💚 Positives only", ar: "💚 الإيجابيات فقط" },
+        optPosDesc: {
+          en: "A statement of appreciation — everything they’ve done that you valued. A lovely gift.",
+          ar: "كشف تقدير — كل ما فعلته وقدّرته. هدية لطيفة.",
+        },
+        optMonthTitle: { en: "📅 This month", ar: "📅 هذا الشهر" },
+        optMonthDesc: {
+          en: "The last 30 days, good and difficult.",
+          ar: "آخر 30 يومًا، الجيد والصعب.",
+        },
+        optFullTitle: { en: "📄 Full balance sheet", ar: "📄 كشف الحساب الكامل" },
+        optFullDesc: {
+          en: "Everything, including hard moments.",
+          ar: "كل شيء، بما في ذلك اللحظات الصعبة.",
+        },
+        guardText: {
+          en: "Sharing difficult moments? Luv Bank frames them gently — as an opening to talk, not a verdict.",
+          ar: "أتشارك لحظات صعبة؟ يصيغها بنك الحب بلطف — كبداية للحوار، لا كحكم.",
+        },
+        cancelBtn: { en: "Cancel", ar: "إلغاء" },
+        tabHomeLabel: { en: "Home", ar: "الرئيسية" },
+        tabInsightsLabel: { en: "Insights", ar: "الرؤى" },
+        disclaimer: {
+          en: "Concept prototype — “track → understand → act,” private by default with user-controlled sharing. The mission: maintain, support and strengthen relationships, and help people rethink toxic ones. Numbers and insights are illustrative.",
+          ar: "نموذج مفاهيمي — «تتبّع ← افهم ← تصرّف»، خاص افتراضيًا مع تحكّم كامل بالمشاركة. الرسالة: الحفاظ على العلاقات ودعمها وتقويتها، ومساعدة الناس على إعادة التفكير في العلاقات السامة. الأرقام والرؤى توضيحية.",
+        },
+        sharePos: {
+          en: "💚 Sent Sara a statement of appreciation — every good thing you noticed.",
+          ar: "💚 أُرسل لسارة كشف تقدير — كل أمر جميل لاحظته.",
+        },
+        shareMonth: {
+          en: "💌 Shared this month with Sara, framed gently to open a conversation.",
+          ar: "💌 شُورك هذا الشهر مع سارة، بصياغة لطيفة لفتح حوار.",
+        },
+        shareFull: {
+          en: "💌 Shared your full balance sheet with Sara, framed as an opening to talk.",
+          ar: "💌 شُورك كشف حسابك الكامل مع سارة، كبداية للحوار.",
+        },
+        depositAdded: { en: "Deposit added ✓", ar: "أُضيف الإيداع ✓" },
+        logged: { en: "Logged ✓", ar: "سُجّل ✓" },
+        classNeedsCare: { en: "Needs care", ar: "بحاجة لعناية" },
+        classNeutral: { en: "Neutral", ar: "محايدة" },
+        classWarming: { en: "Warming up", ar: "تتحسّن" },
+        classCommit: { en: "Commitment", ar: "التزام" },
+        classIntimacy: { en: "Intimacy", ar: "حميمية" },
+        trendingUp: { en: "trending up", ar: "في صعود" },
+        dipping: { en: "dipping", ar: "في هبوط" },
+        justNow: { en: "Just now", ar: "الآن" },
+      };
+      function t(key) {
+        return L(UI[key]);
+      }
+
+      /* ============ DATA ============ */
+      let balance = 128,
+        weekDelta = 14;
+      const spark = [78, 86, 92, 101, 108, 118, 128];
+      let txs = [
+        {
+          emo: "☕",
+          name: { en: "Thoughtful surprise", ar: "مفاجأة لطيفة" },
+          kind: "pos",
+          amt: 8,
+          note: { en: "coffee in bed", ar: "قهوة في السرير" },
+          when: { en: "Today, 8:10", ar: "اليوم 8:10" },
+        },
+        {
+          emo: "😊",
+          name: { en: "Felt appreciated", ar: "شعرت بالتقدير" },
+          kind: "pos",
+          amt: 6,
+          note: { en: "thanked me", ar: "شكرني" },
+          when: { en: "Yesterday", ar: "أمس" },
+        },
+        {
+          emo: "😤",
+          name: { en: "Snapped at me", ar: "انفعل عليّ" },
+          kind: "neg",
+          amt: 5,
+          note: { en: "stressful day", ar: "يوم مرهق" },
+          when: { en: "Mon", ar: "الاثنين" },
+        },
+        {
+          emo: "💬",
+          name: { en: "Good talk", ar: "حديث جميل" },
+          kind: "pos",
+          amt: 7,
+          note: "",
+          when: { en: "Sun", ar: "الأحد" },
+        },
+      ];
+      const POS = [
+        ["💞", { en: "Affection", ar: "حنان" }, 8],
+        ["☕", { en: "Surprise", ar: "مفاجأة" }, 6],
+        ["🙏", { en: "Appreciation", ar: "تقدير" }, 5],
+        ["💬", { en: "Quality time", ar: "وقت نوعي" }, 7],
+        ["😂", { en: "Shared laugh", ar: "ضحكة مشتركة" }, 4],
+        ["🤝", { en: "Support", ar: "دعم" }, 6],
+      ];
+      const NEG = [
+        ["😤", { en: "Snapped", ar: "انفعال" }, 5],
+        ["🙄", { en: "Dismissed", ar: "تجاهُل" }, 4],
+        ["⏳", { en: "Felt ignored", ar: "شعرت بالإهمال" }, 6],
+        ["💢", { en: "Argument", ar: "شجار" }, 7],
+        ["📵", { en: "Distant", ar: "بُعد" }, 4],
+        ["❄️", { en: "Cold", ar: "برود" }, 5],
+      ];
+      let kind = "pos",
+        sel = null;
+
+      const STATES = {
+        hi: {
+          color: "#155e43",
+          title: { en: "You're thriving — warm and steady.", ar: "أنت في ازدهار — دافئ ومستقر." },
+          body: {
+            en: "Your deposits clearly outweigh the difficult moments and the trend is rising. The pattern reads as strong <b>intimacy</b> with growing <b>commitment</b>.",
+            ar: "إيداعاتك تفوق بوضوح اللحظات الصعبة والاتجاه في صعود. يُقرأ النمط كـ<b>حميمية</b> قوية مع <b>التزام</b> متنامٍ.",
+          },
+          pills: {
+            en: '<span class="pill p">Passion 64%</span><span class="pill g">Intimacy 81%</span><span class="pill g">Commitment 73%</span>',
+            ar: '<span class="pill p">شغف 64٪</span><span class="pill g">حميمية 81٪</span><span class="pill g">التزام 73٪</span>',
+          },
+          actLabel: { en: "Pay it forward", ar: "ردّ الجميل" },
+          acts: [
+            [
+              "🎵",
+              { en: "Send a song", ar: "أرسل أغنية" },
+              { en: "Send Sara a song you love", ar: "أرسل لسارة أغنية تحبها" },
+            ],
+            [
+              "😄",
+              { en: "Share a joke", ar: "شاركها نكتة" },
+              { en: "Send something that’ll make her laugh", ar: "أرسل ما يضحكها" },
+            ],
+            [
+              "🎁",
+              { en: "Plan a surprise", ar: "خطّط لمفاجأة" },
+              { en: "A small surprise this week", ar: "مفاجأة صغيرة هذا الأسبوع" },
+            ],
+            [
+              "🙏",
+              { en: "Say thank you", ar: "قل شكرًا" },
+              { en: "A quick note of appreciation", ar: "كلمة تقدير سريعة" },
+            ],
+          ],
+          sugg: [
+            {
+              en: "Your biggest deposits come from small surprises — more of those, less pressure on big gestures.",
+              ar: "أكبر إيداعاتك تأتي من المفاجآت الصغيرة — أكثِر منها، وخفّف الضغط عن اللفتات الكبيرة.",
+            },
+            {
+              en: "You’re in credit; spend some now so a busy week doesn’t quietly drain it.",
+              ar: "رصيدك دائن؛ أنفق بعضه الآن كي لا يستنزفه أسبوع مزدحم بهدوء.",
+            },
+          ],
+          foot: {
+            en: "Insights are reflective prompts, not clinical advice.",
+            ar: "الرؤى محفّزات للتأمل، وليست نصيحة سريرية.",
+          },
+        },
+        mid: {
+          color: "#9a3fa0",
+          title: { en: "Steady — a calm, ordinary stretch.", ar: "مستقرة — فترة هادئة واعتيادية." },
+          body: {
+            en: "Deposits and difficult moments are roughly in balance lately. Nothing’s wrong, but the spark is quiet — a good time for a small, deliberate deposit.",
+            ar: "الإيداعات واللحظات الصعبة متوازنة تقريبًا مؤخرًا. لا شيء خاطئ، لكن الشرارة هادئة — وقت مناسب لإيداع صغير ومقصود.",
+          },
+          pills: {
+            en: '<span class="pill p">Passion 48%</span><span class="pill g">Intimacy 60%</span><span class="pill g">Commitment 66%</span>',
+            ar: '<span class="pill p">شغف 48٪</span><span class="pill g">حميمية 60٪</span><span class="pill g">التزام 66٪</span>',
+          },
+          actLabel: { en: "A small deposit goes a long way", ar: "إيداع صغير يصنع فرقًا كبيرًا" },
+          acts: [
+            [
+              "🎵",
+              { en: "Send a song", ar: "أرسل أغنية" },
+              { en: "Break the routine with a song", ar: "اكسر الروتين بأغنية" },
+            ],
+            [
+              "💬",
+              { en: "Suggest time", ar: "اقترح وقتًا" },
+              { en: "Plan 20 quiet minutes together", ar: "خطّطا لـ20 دقيقة هادئة معًا" },
+            ],
+            [
+              "☕",
+              { en: "Tiny surprise", ar: "مفاجأة صغيرة" },
+              { en: "One small unexpected kindness", ar: "لفتة لطيفة غير متوقعة" },
+            ],
+            [
+              "😄",
+              { en: "Share a joke", ar: "شاركها نكتة" },
+              { en: "Lighten the day", ar: "خفّف أجواء اليوم" },
+            ],
+          ],
+          sugg: [
+            {
+              en: "Difficult moments cluster on busy weekdays — a 10-minute check-in might soften them.",
+              ar: "تتجمع اللحظات الصعبة في أيام الأسبوع المزدحمة — قد يخفّفها تواصل لعشر دقائق.",
+            },
+            {
+              en: "You haven’t logged appreciation in 5 days — an easy deposit is waiting.",
+              ar: "لم تسجّل تقديرًا منذ 5 أيام — إيداع سهل بانتظارك.",
+            },
+          ],
+          foot: {
+            en: "Insights are reflective prompts, not clinical advice.",
+            ar: "الرؤى محفّزات للتأمل، وليست نصيحة سريرية.",
+          },
+        },
+        lo: {
+          color: "#8a322c",
+          title: { en: "It’s been heavy lately.", ar: "كانت الأمور ثقيلة مؤخرًا." },
+          body: {
+            en: "Difficult moments have been outweighing the good for a while, and the balance is sliding. That’s worth taking seriously — gently, and with support.",
+            ar: "تغلب اللحظات الصعبة على الجيدة منذ فترة، والرصيد ينزلق. هذا يستحق الاهتمام — بلطف، ومع الدعم.",
+          },
+          pills: {
+            en: '<span class="pill b">Strain rising</span><span class="pill b">Passion 22%</span><span class="pill p">Commitment 51%</span>',
+            ar: '<span class="pill b">توتر متصاعد</span><span class="pill b">شغف 22٪</span><span class="pill p">التزام 51٪</span>',
+          },
+          actLabel: { en: "Care first", ar: "العناية أولًا" },
+          acts: [
+            [
+              "🫁",
+              { en: "Take a breath", ar: "خذ نفسًا" },
+              { en: "A 2-minute cool-down before reacting", ar: "دقيقتان للتهدئة قبل ردّ الفعل" },
+            ],
+            [
+              "💬",
+              { en: "Calm check-in", ar: "تواصل هادئ" },
+              { en: "Suggest talking when things are calm", ar: "اقترح الحديث حين تهدأ الأمور" },
+            ],
+            [
+              "🧑‍⚕️",
+              { en: "Find support", ar: "اطلب الدعم" },
+              {
+                en: "Talk to a counselor or someone you trust",
+                ar: "تحدّث إلى مختص أو شخص تثق به",
+              },
+            ],
+            [
+              "📔",
+              { en: "See the pattern", ar: "تأمّل النمط" },
+              { en: "Review what’s really been happening", ar: "راجع ما يحدث فعلًا" },
+            ],
+          ],
+          sugg: [
+            {
+              en: "When the balance stays low for weeks, that’s a signal — not a verdict. Reaching out for support is a strength.",
+              ar: "حين يبقى الرصيد منخفضًا لأسابيع، فذلك إشارة — لا حكم. طلب الدعم قوة لا ضعف.",
+            },
+            {
+              en: "Use the record to see the pattern clearly and decide what you need — not to keep score against anyone.",
+              ar: "استخدم السجل لترى النمط بوضوح وتقرّر ما تحتاجه — لا لتسجيل النقاط ضد أحد.",
+            },
+          ],
+          foot: {
+            en: "This isn’t a diagnosis. If you feel unsafe or persistently mistreated, please talk to someone you trust or a professional.",
+            ar: "هذا ليس تشخيصًا. إذا شعرت بعدم الأمان أو بسوء معاملة متكرر، فتحدّث إلى شخص تثق به أو إلى مختص.",
+          },
+        },
+      };
+
+      /* ============ LANGUAGE APPLY ============ */
+      function applyLang() {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+        document.title = t("docTitle");
+        const txtMap = [
+          "headTitle",
+          "headMission",
+          "headHint",
+          "langToggleLabel",
+          "langMini",
+          "brandText",
+          "whoText",
+          "balanceLabel",
+          "shareBtn",
+          "last7Label",
+          "spark7w",
+          "sparkNow",
+          "ratioLabel",
+          "gottmanNote",
+          "remindText",
+          "recentLabel",
+          "logLabel",
+          "segPos",
+          "segNeg",
+          "privateNote",
+          "pvwHi",
+          "pvwMid",
+          "pvwLo",
+          "whatMeansLabel",
+          "gentleSuggLabel",
+          "shareTitle",
+          "shareSub",
+          "optPosTitle",
+          "optPosDesc",
+          "optMonthTitle",
+          "optMonthDesc",
+          "optFullTitle",
+          "optFullDesc",
+          "guardText",
+          "cancelBtn",
+          "tabHomeLabel",
+          "tabInsightsLabel",
+          "disclaimer",
+        ];
+        txtMap.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = t(id);
+        });
+        document.getElementById("headDesc").innerHTML = t("headDesc");
+        document.getElementById("noteInput").placeholder = t("notePlaceholder");
+        setKind(kind);
+        renderHome();
+        preview(currentState());
+        try {
+          localStorage.setItem("luvbank_lang", lang);
+        } catch (e) {}
+      }
+      function toggleLang() {
+        lang = lang === "ar" ? "en" : "ar";
+        applyLang();
+      }
+
+      /* ============ NAV ============ */
+      function go(id) {
+        document.querySelectorAll(".page").forEach((p) => p.classList.remove("on"));
+        document.getElementById(id).classList.add("on");
+        document.getElementById("tabHome").classList.toggle("on", id === "home");
+        document.getElementById("tabInsights").classList.toggle("on", id === "insights");
+        document.querySelector(".view").scrollTop = 0;
+        if (id === "insights") preview(currentState());
+      }
+      function currentState() {
+        return balance > 80 ? "hi" : balance >= 0 ? "mid" : "lo";
+      }
+      function openShare() {
+        document.getElementById("shareModal").classList.add("on");
+      }
+      function closeShare() {
+        document.getElementById("shareModal").classList.remove("on");
+      }
+      function share(k) {
+        closeShare();
+        if (k === "pos") toast(t("sharePos"));
+        else if (k === "month") toast(t("shareMonth"));
+        else toast(t("shareFull"));
+      }
+
+      /* ============ LOG ============ */
+      function setKind(k) {
+        kind = k;
+        document.getElementById("segPos").className = k === "pos" ? "act-pos" : "";
+        document.getElementById("segNeg").className = k === "neg" ? "act-neg" : "";
+        renderEmos();
+        refreshBtn();
+      }
+      function renderEmos() {
+        const list = kind === "pos" ? POS : NEG;
+        document.getElementById("emos").innerHTML = list
+          .map(
+            (e, i) =>
+              '<div class="emo' +
+              (sel === i ? " sel" : "") +
+              '" onclick="pick(' +
+              i +
+              ')"><div class="e">' +
+              e[0] +
+              '</div><div class="n">' +
+              L(e[1]) +
+              '</div><div class="w">' +
+              (kind === "pos" ? "+" : "−") +
+              e[2] +
+              " " +
+              t("pts") +
+              "</div></div>",
+          )
+          .join("");
+      }
+      function pick(i) {
+        sel = i;
+        renderEmos();
+        refreshBtn();
+      }
+      function refreshBtn() {
+        const b = document.getElementById("addBtn");
+        if (sel === null) {
+          b.classList.add("disabled");
+          b.textContent = t("addChoose");
+        } else {
+          b.classList.remove("disabled");
+          b.textContent = kind === "pos" ? t("addDeposit") : t("addWithdrawal");
+        }
+      }
+      function addTx() {
+        if (sel === null) return;
+        const e = (kind === "pos" ? POS : NEG)[sel];
+        const note = document.getElementById("noteInput").value.trim();
+        const amt = e[2] * (kind === "pos" ? 1 : -1);
+        balance += amt;
+        weekDelta += amt;
+        txs.unshift({
+          emo: e[0],
+          name: L(e[1]),
+          kind: kind,
+          amt: e[2],
+          note: note,
+          when: t("justNow"),
+        });
+        spark.push(balance);
+        spark.shift();
+        document.getElementById("noteInput").value = "";
+        sel = null;
+        renderEmos();
+        refreshBtn();
+        renderHome();
+        toast(kind === "pos" ? t("depositAdded") : t("logged"));
+        setTimeout(() => go("home"), 550);
+      }
+      function toast(msg) {
+        const t2 = document.getElementById("toast");
+        t2.innerHTML = msg;
+        t2.classList.add("show");
+        clearTimeout(window._tt);
+        window._tt = setTimeout(() => t2.classList.remove("show"), 2200);
+      }
+
+      /* ============ HOME ============ */
+      function renderNudge() {
+        const n = document.getElementById("nudge");
+        const s = currentState();
+        const N = {
+          hi: {
+            cls: "nudge pos",
+            ic: "💝",
+            title: { en: "You're rich in love right now", ar: "أنت غنيٌّ بالحب الآن" },
+            body: {
+              en: "Big credit balance — a perfect moment to pay some back before life gets busy.",
+              ar: "رصيدك الدائن كبير — لحظة مثالية لردّ بعضه قبل أن تنشغل الحياة.",
+            },
+            btn: { en: "Pay it forward →", ar: "ردّ الجميل ←" },
+          },
+          mid: {
+            cls: "nudge warn",
+            ic: "✨",
+            title: { en: "A quiet stretch", ar: "فترة هادئة" },
+            body: {
+              en: "Things are balanced. One small, deliberate deposit could lift the week.",
+              ar: "الأمور متوازنة. إيداع صغير ومقصود قد يرفع مزاج الأسبوع.",
+            },
+            btn: { en: "Pick a gesture →", ar: "اختر لفتة ←" },
+          },
+          lo: {
+            cls: "nudge neg",
+            ic: "🤍",
+            title: { en: "It's been heavy lately", ar: "كانت الأمور ثقيلة مؤخرًا" },
+            body: {
+              en: "The balance has been low for a while. Be gentle with yourself — support can help.",
+              ar: "ظل الرصيد منخفضًا لفترة. كن لطيفًا مع نفسك — الدعم قد يساعد.",
+            },
+            btn: { en: "See support →", ar: "اطلب الدعم ←" },
+          },
+        }[s];
+        n.className = N.cls;
+        document.getElementById("nudgeIc").textContent = N.ic;
+        document.getElementById("nudgeTitle").textContent = L(N.title);
+        document.getElementById("nudgeBody").textContent = L(N.body);
+        document.getElementById("nudgeBtn").textContent = L(N.btn);
+      }
+      function nudgeAction() {
+        go("insights");
+      }
+      function renderHome() {
+        document.getElementById("bal").innerHTML =
+          (balance >= 0 ? "+" : "") + balance + " <small>" + t("pts") + "</small>";
+        const chip = document.getElementById("trendChip");
+        chip.textContent = (weekDelta >= 0 ? "▲ +" : "▼ ") + weekDelta + " " + t("thisWeek");
+        chip.style.background = weekDelta >= 0 ? "rgba(255,255,255,.18)" : "rgba(120,0,0,.28)";
+        const max = Math.max.apply(null, spark),
+          min = Math.min.apply(null, spark);
+        document.getElementById("spark").innerHTML = spark
+          .map(function (v) {
+            var h = 16 + (max > min ? ((v - min) / (max - min)) * 44 : 22);
+            return '<div class="bar" style="height:' + h + 'px"></div>';
+          })
+          .join("");
+        const pos = txs.filter((x) => x.kind === "pos").reduce((a, x) => a + x.amt, 0);
+        const neg = txs.filter((x) => x.kind === "neg").reduce((a, x) => a + x.amt, 0) || 1;
+        const r = pos / neg;
+        document.getElementById("ratioVal").textContent = r.toFixed(1) + " : 1";
+        document.getElementById("ratioVal").style.color =
+          r >= 4 ? "var(--pos)" : r >= 2 ? "var(--warn)" : "var(--neg)";
+        document.getElementById("ratioFill").style.width =
+          Math.max(8, Math.min(92, (r / 6) * 100)) + "%";
+        const badge = document.getElementById("classBadge");
+        let label =
+          balance > 110
+            ? t("classIntimacy")
+            : balance > 60
+              ? t("classCommit")
+              : balance > 20
+                ? t("classWarming")
+                : balance >= 0
+                  ? t("classNeutral")
+                  : t("classNeedsCare");
+        badge.innerHTML =
+          label +
+          ' <span class="sub">· ' +
+          (weekDelta >= 0 ? t("trendingUp") : t("dipping")) +
+          "</span>";
+        document.getElementById("txlist").innerHTML = txs
+          .slice(0, 5)
+          .map((x) => {
+            const nm = L(x.name),
+              nt = L(x.note),
+              wh = L(x.when);
+            return (
+              '<div class="tx"><div class="ic ' +
+              x.kind +
+              '">' +
+              x.emo +
+              '</div><div class="main"><b>' +
+              nm +
+              "</b><span>" +
+              (nt ? nt + " · " : "") +
+              wh +
+              '</span></div><div class="amt ' +
+              x.kind +
+              '">' +
+              (x.kind === "pos" ? "+" : "−") +
+              x.amt +
+              "</div></div>"
+            );
+          })
+          .join("");
+        renderNudge();
+      }
+
+      /* ============ INSIGHTS ============ */
+      function preview(k) {
+        document
+          .querySelectorAll(".pvw button")
+          .forEach((b) => b.classList.toggle("on", b.dataset.k === k));
+        const s = STATES[k];
+        document.getElementById("insightTitle").textContent = L(s.title);
+        document.getElementById("insightTitle").style.color = s.color;
+        document.getElementById("insightBody").innerHTML = L(s.body);
+        document.getElementById("insightPills").innerHTML = L(s.pills);
+        document.getElementById("actLabel").textContent = L(s.actLabel);
+        document.getElementById("acts").innerHTML = s.acts
+          .map(function (a, i) {
+            return (
+              '<div class="chip' +
+              (k === "hi" && i === 0 ? " go" : "") +
+              '" onclick="doAct(\'' +
+              k +
+              "'," +
+              i +
+              ')"><span class="ce">' +
+              a[0] +
+              "</span>" +
+              L(a[1]) +
+              "</div>"
+            );
+          })
+          .join("");
+        document.getElementById("suggList").innerHTML = s.sugg
+          .map((x) => '<div class="sugg"><div class="d"></div><p>' + L(x) + "</p></div>")
+          .join("");
+        document.getElementById("footNote").textContent = L(s.foot);
+      }
+      function doAct(k, i) {
+        toast("💌 " + L(STATES[k].acts[i][2]));
+      }
+
+      /* ============ INIT ============ */
+      applyLang();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+# Local Phase 11 container smoke against the existing non-production Neon branch.
+# Requires Docker + ALLOW_INSECURE_LOCAL_PRODUCTION_SMOKE=true with localhost origins only.
+# Never use this file for real production.
+#
+# Copy deploy/.env.smoke.example -> deploy/.env.smoke (gitignored) and fill values locally.
+# Do not commit real secrets.
+
+name: luv-bank-phase11-smoke
+
+networks:
+  luvbank_smoke:
+    driver: bridge
+    name: luvbank_phase11_smoke_net
+
+services:
+  api:
+    container_name: luvbank_phase11_smoke_api
+    image: luv-bank-api:phase11-smoke
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    networks: [luvbank_smoke]
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env.smoke
+    environment:
+      NODE_ENV: production
+      PERSISTENCE_DRIVER: prisma
+      API_HOST: 0.0.0.0
+      API_PORT: "4000"
+      API_PUBLIC_URL: http://127.0.0.1:4000
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      COOKIE_SECURE: "false"
+      COOKIE_SAME_SITE: lax
+      TRUST_PROXY_HOPS: "0"
+      ALLOW_INSECURE_LOCAL_PRODUCTION_SMOKE: "true"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+
+  web:
+    container_name: luvbank_phase11_smoke_web
+    image: luv-bank-web:phase11-smoke
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+        NEXT_PUBLIC_API_URL: http://127.0.0.1:4000
+        NEXT_PUBLIC_DEFAULT_LOCALE: en
+        PWA_CACHE_VERSION: phase-9-v1
+        ALLOW_INSECURE_LOCAL_PRODUCTION_SMOKE: "true"
+    networks: [luvbank_smoke]
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      ALLOW_INSECURE_LOCAL_PRODUCTION_SMOKE: "true"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  migrate:
+    profiles: ["migrate"]
+    container_name: luvbank_phase11_smoke_migrate
+    image: luv-bank-migrate:phase11-smoke
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.migrate
+    networks: [luvbank_smoke]
+    env_file:
+      - .env.smoke
+    command: ["migrate", "deploy", "--schema", "prisma/schema.prisma"]

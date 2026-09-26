@@ -1,0 +1,64 @@
+# Build context must be the repository root.
+.git
+.gitignore
+.gitattributes
+
+# Secrets and local env — never copy into images
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.production.example
+!**/.env.smoke.example
+
+# Dependencies and caches
+node_modules
+**/node_modules
+.pnpm-store
+**/.pnpm-store
+
+# Build outputs not used as Docker inputs
+**/dist
+**/.next
+**/coverage
+**/out
+
+# Tests and browser artifacts
+test-results
+playwright-report
+blob-report
+**/test-results
+**/playwright-report
+e2e
+**/__screenshots__
+**/*.neon.test.ts
+
+# IDE / OS
+.idea
+.vscode
+.cursor
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+logs
+tmp
+temp
+.tmp
+
+# Private material
+**/*.pem
+**/*.key
+**/*.p12
+**/secrets
+**/certs
+
+# Docs-heavy paths are not required for image builds (keep source)
+# (source under apps/ and packages/ is intentionally included)
+
+# Local downloads / exports
+downloads
+exports
+*.sql.bak
